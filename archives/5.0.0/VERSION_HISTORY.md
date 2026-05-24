@@ -1,11 +1,12 @@
 # Version History
 
-## 5.0.0 - 2026-05-24
-- MAJOR: Version selector now uses central `version.json` and stays in same tab (no forced new tab).
-- MAJOR: Added cross-topic support with new **Percentages** mental-math topic.
-- Restored richer tip rendering driven by selected topic and dynamic topic caption.
-- Improved older-version discoverability by loading full version list from central metadata.
-- Archived release in `archives/5.0.0`.
+## 7.0.0 - 2026-05-24
+- MAJOR: Fixed stats regression by restoring full stats rendering (calendar + grouped attempts + metrics) via dedicated `lib/stats.js`.
+- Added fallback loading strategy for central `version.json` and `VERSION_HISTORY.md` from main branch first, then local archive copy.
+- Split tips rendering into `lib/tips.js` and stats rendering into `lib/stats.js` for cleaner architecture.
+- Removed Settings from footer tabs (kept in menu only).
+- Back-propagated central `version.json` and `VERSION_HISTORY.md` into archive folders for consistency.
+- Archived full release into `archives/7.0.0`.
 
-## 4.0.0 - 2026-05-24
-- MAJOR: Added mobile-first bottom tab navigation while keeping hamburger menu navigation.
+## 6.0.0 - 2026-05-24
+- MAJOR: Added Settings option to choose spaced repetition algorithm.

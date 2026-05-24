@@ -1,24 +1,12 @@
 # Version History
 
-## 3.0.0 - 2026-05-24
-- MAJOR: Reintroduced version switcher and added in-app version history page.
-- MAJOR: Added richer spaced repetition progression (SM-2 style scheduling) and adaptive difficulty levels for square-root learning.
-- MAJOR: Rebuilt statistics dashboard with visual charts (difficulty error bars + correctness trend graph).
-- Expanded square-root method page with more detailed, step-by-step examples and memory clues.
-- Added Firestore retrieval sync for signed-in users and sync feedback messages.
-- Archived full app snapshot to `archives/3.0.0`.
+## 7.0.0 - 2026-05-24
+- MAJOR: Fixed stats regression by restoring full stats rendering (calendar + grouped attempts + metrics) via dedicated `lib/stats.js`.
+- Added fallback loading strategy for central `version.json` and `VERSION_HISTORY.md` from main branch first, then local archive copy.
+- Split tips rendering into `lib/tips.js` and stats rendering into `lib/stats.js` for cleaner architecture.
+- Removed Settings from footer tabs (kept in menu only).
+- Back-propagated central `version.json` and `VERSION_HISTORY.md` into archive folders for consistency.
+- Archived full release into `archives/7.0.0`.
 
-## 2.0.0 - 2026-05-24
-- MAJOR: Added navigation architecture and major feature expansion.
-- Added hamburger menu and page routing between Practice, Statistics Dashboard, and Tips & Method pages.
-- Added Google login/signup with Firebase Authentication.
-- Added statistics dashboard with total/correct/wrong/average time and recent attempts.
-- Persisted question/answer/correctness/time data into both localStorage and Firestore.
-- Added colourful graphic tips page for mental square-root method.
-- Archived full release snapshot under `archives/2.0.0`.
-
-## 1.0.0 - 2026-05-24
-- MAJOR: Initial runnable QuickMath web app experience.
-
-## 0.1.0 - 2026-05-24
-- Initial repository scaffold with README.
+## 6.0.0 - 2026-05-24
+- MAJOR: Added Settings option to choose spaced repetition algorithm.

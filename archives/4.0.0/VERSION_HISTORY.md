@@ -1,14 +1,12 @@
 # Version History
 
-## 4.0.0 - 2026-05-24
-- MAJOR: Added mobile-first bottom tab navigation while keeping hamburger menu navigation.
-- MAJOR: Added modal version history view with prettified release cards.
-- MAJOR: Added activity calendar, period filter, and grouped attempt history for large data volumes.
-- Increased answer input size and improved iPhone/mobile usability and layout responsiveness.
-- Retained spaced repetition progression and Firestore save/retrieve behavior.
-- Archived full release into `archives/4.0.0`.
+## 7.0.0 - 2026-05-24
+- MAJOR: Fixed stats regression by restoring full stats rendering (calendar + grouped attempts + metrics) via dedicated `lib/stats.js`.
+- Added fallback loading strategy for central `version.json` and `VERSION_HISTORY.md` from main branch first, then local archive copy.
+- Split tips rendering into `lib/tips.js` and stats rendering into `lib/stats.js` for cleaner architecture.
+- Removed Settings from footer tabs (kept in menu only).
+- Back-propagated central `version.json` and `VERSION_HISTORY.md` into archive folders for consistency.
+- Archived full release into `archives/7.0.0`.
 
-## 3.0.0 - 2026-05-24
-- MAJOR: Reintroduced version switcher and added in-app version history page.
-- MAJOR: Added richer spaced repetition progression (SM-2 style scheduling) and adaptive difficulty levels.
-- MAJOR: Rebuilt statistics dashboard with visual charts.
+## 6.0.0 - 2026-05-24
+- MAJOR: Added Settings option to choose spaced repetition algorithm.

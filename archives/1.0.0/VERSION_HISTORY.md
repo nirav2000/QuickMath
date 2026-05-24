@@ -1,11 +1,12 @@
 # Version History
 
-## 1.0.0 - 2026-05-24
-- MAJOR: Initial runnable QuickMath web app experience.
-- Added square-root practice flow with full-screen question UI and auto-advance.
-- Added attempt logging with Firestore (`attempts` collection) and localStorage fallback.
-- Added in-app learning section for square-root technique.
-- Added version switcher and archived snapshots.
+## 7.0.0 - 2026-05-24
+- MAJOR: Fixed stats regression by restoring full stats rendering (calendar + grouped attempts + metrics) via dedicated `lib/stats.js`.
+- Added fallback loading strategy for central `version.json` and `VERSION_HISTORY.md` from main branch first, then local archive copy.
+- Split tips rendering into `lib/tips.js` and stats rendering into `lib/stats.js` for cleaner architecture.
+- Removed Settings from footer tabs (kept in menu only).
+- Back-propagated central `version.json` and `VERSION_HISTORY.md` into archive folders for consistency.
+- Archived full release into `archives/7.0.0`.
 
-## 0.1.0 - 2026-05-24
-- Initial repository scaffold with README.
+## 6.0.0 - 2026-05-24
+- MAJOR: Added Settings option to choose spaced repetition algorithm.

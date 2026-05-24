@@ -1,9 +1,11 @@
 {
-  "currentVersion": "5.0.0",
+  "currentVersion": "7.0.0",
   "releaseType": "major",
   "historyFile": "VERSION_HISTORY.md",
   "availableVersions": [
-    {"version":"5.0.0","label":"Current","archivePath":"archives/5.0.0"},
+    {"version":"7.0.0","label":"Current","archivePath":"archives/7.0.0"},
+    {"version":"6.0.0","label":"SR settings + modular topics","archivePath":"archives/6.0.0"},
+    {"version":"5.0.0","label":"Topics+Versioning","archivePath":"archives/5.0.0"},
     {"version":"4.0.0","label":"Mobile+Modal","archivePath":"archives/4.0.0"},
     {"version":"3.0.0","label":"Adaptive + charts","archivePath":"archives/3.0.0"},
     {"version":"2.0.0","label":"Nav/Auth/Stats","archivePath":"archives/2.0.0"},
