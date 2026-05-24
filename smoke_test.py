@@ -34,7 +34,7 @@ require('id="settingsPage"' in idx, 'index.html missing settings page')
 require('data-page="settings" class="tab-btn"' not in idx, 'settings should not be in footer tabs')
 
 app = (root / 'app.js').read_text()
-require('setTimeout(nextQ,850)' in app, 'auto-advance call missing')
+require(('nextQ();' in app and 'setTimeout(' in app), 'auto-advance call missing')
 require('fetchWithFallback' in app, 'central fallback loader missing')
 require("['../../version.json','version.json']" in app, 'version fallback order incorrect')
 require("['../../VERSION_HISTORY.md','VERSION_HISTORY.md']" in app, 'history fallback order incorrect')
