@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QuickMath</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <h1>QuickMath</h1>
+        <div class="version-switcher">
+          <label for="versionSelect">Version</label>
+          <select id="versionSelect"></select>
+        </div>
+      </header>
+
+      <section class="question-panel">
+        <div id="questionText" class="question">√ ?</div>
+        <input id="answerInput" type="number" inputmode="numeric" placeholder="Type answer" autocomplete="off" />
+        <button id="submitButton">Submit</button>
+        <p id="feedback" class="feedback" aria-live="polite"></p>
+      </section>
+
+      <section class="learn-panel">
+        <h2>How to solve quickly</h2>
+        <ol>
+          <li>Memorize perfect squares from 1² to 25².</li>
+          <li>For perfect squares, identify nearby square anchors (like 20² = 400).</li>
+          <li>For non-perfect squares, estimate between nearest anchors.</li>
+          <li>Use the final digit and range to refine the answer mentally.</li>
+        </ol>
+      </section>
+    </main>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
