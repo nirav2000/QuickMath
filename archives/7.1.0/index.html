@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>QuickMath</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="left-head">
+        <button id="menuButton" class="menu-btn" aria-label="Open menu">☰</button>
+        <h1>QuickMath</h1>
+      </div>
+      <div class="head-actions">
+        <label class="version-select-wrap">Version
+          <select id="versionSelect"></select>
+        </label>
+        <label class="version-select-wrap">Topic
+          <select id="topicSelect">
+            <option value="square-roots" selected>Square Roots</option>
+            <option value="percentages">Percentages</option>
+          </select>
+        </label>
+        <button id="authButton">Login / Signup with Google</button>
+        <button id="logoutButton" class="hidden">Logout</button>
+      </div>
+    </header>
+
+    <nav id="menuPanel" class="menu hidden">
+      <button data-page="practice">Practice</button>
+      <button data-page="stats">Statistics</button>
+      <button data-page="tips">Tips & Clues</button>
+      <button data-page="history">Version History</button>
+      <button data-page="settings">Settings</button>
+    </nav>
+
+    <main class="app">
+      <section id="practicePage" class="page active">
+        <p class="topic" id="topicCaption">Square roots with progression + spaced repetition</p>
+        <div id="questionText" class="question">√ ?</div>
+        <input id="answerInput" class="answer-input" type="number" step="any" inputmode="decimal" placeholder="Type answer" autocomplete="off" />
+        <button id="submitButton">Submit</button>
+        <p id="feedback" class="feedback" aria-live="polite"></p>
+      </section>
+
+      <section id="statsPage" class="page">
+        <h2>Statistics Dashboard</h2>
+        <div class="stats-grid">
+          <div class="card"><span>Total</span><strong id="totalQuestions">0</strong></div>
+          <div class="card"><span>Correct</span><strong id="correctCount">0</strong></div>
+          <div class="card"><span>Wrong</span><strong id="wrongCount">0</strong></div>
+          <div class="card"><span>Avg ms</span><strong id="avgTime">0</strong></div>
+          <div class="card"><span>Accuracy</span><strong id="accuracyRate">0%</strong></div>
+        </div>
+
+        <div class="filters">
+          <label>Filter period
+            <select id="periodFilter"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="365">Last 12 months</option><option value="all">All</option></select>
+          </label>
+        </div>
+        <h3>Activity Calendar (GitHub-style)</h3><div id="activityCalendar" class="activity-calendar"></div>
+        <h3>Progress by difficulty</h3><canvas id="difficultyChart" width="800" height="220"></canvas>
+        <h3>Correct vs Wrong trend (recent 20)</h3><canvas id="trendChart" width="800" height="220"></canvas>
+        <h3>Recent Attempts (grouped by date)</h3><div id="recentAttempts" class="attempt-groups"></div>
+      </section>
+      <section id="tipsPage" class="page colourful">
+        <h2>Tips & Clues</h2>
+        <div id="tipsContainer" class="tip-panels"></div>
+      </section>
+
+      <section id="settingsPage" class="page">
+        <h2>Settings</h2>
+        <label>Spaced repetition algorithm
+          <select id="srAlgorithmSelect">
+            <option value="sm2_strict" selected>SM-2 (Strict)</option>
+            <option value="supermemo">SuperMemo (Heuristic)</option>
+          </select>
+        </label>
+      </section>
+
+      <section id="historyPage" class="page">
+        <h2>Version History</h2>
+        <button id="openHistoryModal">Open Full History</button>
+      </section>
+    </main>
+
+    <nav class="bottom-tabs" aria-label="Primary">
+      <button data-page="practice" class="tab-btn active">Practice</button>
+      <button data-page="stats" class="tab-btn">Stats</button>
+      <button data-page="history" class="tab-btn">History</button>
+      <button data-page="tips" class="tab-btn">Tips</button>
+    </nav>
+
+    <dialog id="historyModal" class="history-modal">
+      <div class="modal-head"><h3>Version History</h3><button id="closeHistoryModal">Close</button></div>
+      <div id="historyContent" class="history-content"></div>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
