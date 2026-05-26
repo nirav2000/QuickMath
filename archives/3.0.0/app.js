@@ -27,7 +27,7 @@ async function fetchWithFallback(paths, parser='json'){
   } return null; 
 }
 
-versions=JSON.parse(fetchWithFallback(VERSION_FALLBACK_PATHS)).availableVersions;
+//versions=JSON.parse(fetchWithFallback(VERSION_FALLBACK_PATHS)).availableVersions;
 //*** END: Inserting backward compatibility versioing ***//
 
 const els = {
