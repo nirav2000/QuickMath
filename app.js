@@ -29,7 +29,7 @@ let versionMeta = null;
 let versionById = {};
 async function loadVersions(){
   const meta=await fetchWithFallback(['../../version.json','version.json'],'json');
-  versionMeta=meta||{currentVersion:'7.3.0',availableVersions:[{version:'7.3.0',archivePath:'archives/7.3.0'}]};
+  versionMeta=meta;//||{currentVersion:'7.3.0',availableVersions:[{version:'7.3.0',archivePath:'archives/7.3.0'}]};
   versionById = Object.fromEntries((versionMeta.availableVersions||[]).map(v=>[v.version,v]));
   els.versionSelect.innerHTML='';
   versionMeta.availableVersions.forEach(v=>{
@@ -49,7 +49,7 @@ els.versionSelect.addEventListener('change',e=>{
   const v=e.target.value;
   const base=window.location.pathname.includes('/archives/') ? window.location.pathname.split('/archives/')[0] : window.location.pathname.replace(/\/[^/]*$/,'');
   const root=`${window.location.origin}${base}`;
-  const current=versionMeta?.currentVersion||'7.3.0';
+  const current=versionMeta.currentVersion;//?.currentVersion||'7.3.0';
   const target = versionById[v];
   if(!target){ return; }
   window.location.href = v===current ? `${root}/index.html` : `${root}/${target.archivePath}/index.html`;
