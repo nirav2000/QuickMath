@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>QuickMath</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -16,12 +16,6 @@
         <label class="version-select-wrap">Version
           <select id="versionSelect"></select>
         </label>
-        <label class="version-select-wrap">Topic
-          <select id="topicSelect">
-            <option value="square-roots" selected>Square Roots</option>
-            <option value="percentages">Percentages</option>
-          </select>
-        </label>
         <button id="authButton">Login / Signup with Google</button>
         <button id="logoutButton" class="hidden">Logout</button>
       </div>
@@ -30,16 +24,15 @@
     <nav id="menuPanel" class="menu hidden">
       <button data-page="practice">Practice</button>
       <button data-page="stats">Statistics</button>
-      <button data-page="tips">Tips & Clues</button>
+      <button data-page="tips">Tips & Method</button>
       <button data-page="history">Version History</button>
-      <button data-page="settings">Settings</button>
     </nav>
 
     <main class="app">
       <section id="practicePage" class="page active">
-        <p class="topic" id="topicCaption">Square roots with progression + spaced repetition</p>
+        <p class="topic">Topic: Square roots (progressive difficulty + spaced repetition)</p>
         <div id="questionText" class="question">√ ?</div>
-        <input id="answerInput" class="answer-input" type="number" step="any" inputmode="decimal" placeholder="Type answer" autocomplete="off" />
+        <input id="answerInput" type="number" step="any" inputmode="decimal" placeholder="Type answer" autocomplete="off" />
         <button id="submitButton">Submit</button>
         <p id="feedback" class="feedback" aria-live="polite"></p>
       </section>
@@ -53,49 +46,31 @@
           <div class="card"><span>Avg ms</span><strong id="avgTime">0</strong></div>
           <div class="card"><span>Accuracy</span><strong id="accuracyRate">0%</strong></div>
         </div>
-
-        <div class="filters">
-          <label>Filter period
-            <select id="periodFilter"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="365">Last 12 months</option><option value="all">All</option></select>
-          </label>
-        </div>
-        <h3>Activity Calendar (GitHub-style)</h3><div id="activityCalendar" class="activity-calendar"></div>
-        <h3>Progress by difficulty</h3><canvas id="difficultyChart" width="800" height="220"></canvas>
-        <h3>Correct vs Wrong trend (recent 20)</h3><canvas id="trendChart" width="800" height="220"></canvas>
-        <h3>Recent Attempts (grouped by date)</h3><div id="recentAttempts" class="attempt-groups"></div>
+        <h3>Progress by difficulty</h3>
+        <canvas id="difficultyChart" width="800" height="220"></canvas>
+        <h3>Correct vs Wrong trend (recent 20)</h3>
+        <canvas id="trendChart" width="800" height="220"></canvas>
+        <h3>Recent attempts</h3>
+        <ul id="recentAttempts" class="attempt-list"></ul>
       </section>
+
       <section id="tipsPage" class="page colourful">
-        <h2>Tips & Clues</h2>
-        <div id="tipsContainer" class="tip-panels"></div>
-      </section>
-
-      <section id="settingsPage" class="page">
-        <h2>Settings</h2>
-        <label>Spaced repetition algorithm
-          <select id="srAlgorithmSelect">
-            <option value="sm2_strict" selected>SM-2 (Strict)</option>
-            <option value="supermemo">SuperMemo (Heuristic)</option>
-          </select>
-        </label>
+        <h2>Fast Square Root Method (Step-by-Step)</h2>
+        <div class="tip-panels">
+          <article><h3>Step 1: Learn anchor squares</h3><p>Memorize 1² to 40² in chunks: 1-10, 11-20, 21-30, 31-40. Ex: 17²=289, 26²=676.</p></article>
+          <article><h3>Step 2: Bracket the number</h3><p>For √850, find nearby squares: 29²=841 and 30²=900, so answer is between 29 and 30.</p></article>
+          <article><h3>Step 3: Estimate proportionally</h3><p>850 is 9 above 841 out of gap 59, so √850 ≈ 29 + 9/59 ≈ 29.15.</p></article>
+          <article><h3>Step 4: Last-digit clues</h3><p>Perfect squares can end only in 0,1,4,5,6,9. Eg if number ends in 9, root often ends in 3 or 7 (for perfect squares).</p></article>
+          <article><h3>Step 5: Speed drills</h3><p>Do batches of 20. First focus on correctness, then reduce average time below 1500ms.</p></article>
+          <article><h3>Step 6: Error review</h3><p>Wrong answers are repeated sooner by spaced repetition so weak spots are reinforced.</p></article>
+        </div>
       </section>
 
       <section id="historyPage" class="page">
         <h2>Version History</h2>
-        <button id="openHistoryModal">Open Full History</button>
+        <pre id="historyContent" class="history-box"></pre>
       </section>
     </main>
-
-    <nav class="bottom-tabs" aria-label="Primary">
-      <button data-page="practice" class="tab-btn active">Practice</button>
-      <button data-page="stats" class="tab-btn">Stats</button>
-      <button data-page="history" class="tab-btn">History</button>
-      <button data-page="tips" class="tab-btn">Tips</button>
-    </nav>
-
-    <dialog id="historyModal" class="history-modal">
-      <div class="modal-head"><h3>Version History</h3><button id="closeHistoryModal">Close</button></div>
-      <div id="historyContent" class="history-content"></div>
-    </dialog>
 
     <script type="module" src="app.js"></script>
   </body>

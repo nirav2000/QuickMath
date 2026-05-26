@@ -1,44 +1,24 @@
 # Version History
 
-## 7.3.2 - 2026-05-26
-- PATCH: Fixed archived `3.0.0` build loading issue by restoring compatible app bundle files (`index.html`, `styles.css`, `app.js`, `lib/*`, `topics/*`).
-- PATCH: Ensured `archives/3.0.0` includes required module files imported by `app.js`.
-- Archived full release into `archives/7.3.2`.
-
-## 7.3.1 - 2026-05-26
-- PATCH: Fully fixed archive-to-archive version switching by routing through `archivePath` from central metadata.
-- PATCH: Propagated cleaned switcher logic and central version/history files across archive builds to prevent nested archive URLs.
-- Archived full release into `archives/7.3.1`.
-
-## 7.3.0 - 2026-05-26
-- MINOR: Completed version history list and improved anchor tips + footer safe-area styling.
-
-## 7.2.0 - 2026-05-25
-- MINOR: Fixed nested archive-path switching bug and improved history modal rendering.
-
-## 7.1.0 - 2026-05-25
-- MINOR: Expanded square-root anchor square list explicitly in tips.
-
-## 7.0.0 - 2026-05-24
-- MAJOR: Restored full stats rendering and modularized stats/tips helpers.
-
-## 6.0.0 - 2026-05-24
-- MAJOR: Added SR algorithm selector (SM-2 Strict / SuperMemo Heuristic) and modular topics structure.
-
-## 5.0.0 - 2026-05-24
-- MAJOR: Added percentage topic and centralized version loading.
-
-## 4.0.0 - 2026-05-24
-- MAJOR: Added mobile tabs, modal history, grouped attempts, and activity calendar.
-
 ## 3.0.0 - 2026-05-24
-- MAJOR: Reintroduced version switcher, charts, and stronger spaced repetition flow.
+- MAJOR: Reintroduced version switcher and added in-app version history page.
+- MAJOR: Added richer spaced repetition progression (SM-2 style scheduling) and adaptive difficulty levels for square-root learning.
+- MAJOR: Rebuilt statistics dashboard with visual charts (difficulty error bars + correctness trend graph).
+- Expanded square-root method page with more detailed, step-by-step examples and memory clues.
+- Added Firestore retrieval sync for signed-in users and sync feedback messages.
+- Archived full app snapshot to `archives/3.0.0`.
 
 ## 2.0.0 - 2026-05-24
-- MAJOR: Added hamburger navigation, stats dashboard, Firebase auth, and colorful tips page.
+- MAJOR: Added navigation architecture and major feature expansion.
+- Added hamburger menu and page routing between Practice, Statistics Dashboard, and Tips & Method pages.
+- Added Google login/signup with Firebase Authentication.
+- Added statistics dashboard with total/correct/wrong/average time and recent attempts.
+- Persisted question/answer/correctness/time data into both localStorage and Firestore.
+- Added colourful graphic tips page for mental square-root method.
+- Archived full release snapshot under `archives/2.0.0`.
 
 ## 1.0.0 - 2026-05-24
-- MAJOR: Initial runnable QuickMath square-root web app.
+- MAJOR: Initial runnable QuickMath web app experience.
 
 ## 0.1.0 - 2026-05-24
-- Initial repository scaffold.
+- Initial repository scaffold with README.
