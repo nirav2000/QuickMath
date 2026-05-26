@@ -7,12 +7,28 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-const versions = [
+let versions = [
   { version: '3.0.0', label: '3.0.0 current', archive: 'archives/3.0.0' },
   { version: '2.0.0', label: '2.0.0', archive: 'archives/2.0.0' },
   { version: '1.0.0', label: '1.0.0', archive: 'archives/1.0.0' },
   { version: '0.1.0', label: '0.1.0', archive: 'archives/0.1.0' }
 ];
+//*** Start: Inserting backward compatibility versioing ***//
+const VERSION_FALLBACK_PATHS = ['../../version.json','version.json'];
+const HISTORY_FALLBACK_PATHS = ['../../VERSION_HISTORY.md','VERSION_HISTORY.md'];
+
+async function fetchWithFallback(paths, parser='json'){
+  for(const p of paths){
+    try{ 
+      const r=await fetch(p); 
+      if(!r.ok) continue; 
+      return parser==='json'?await r.json():await r.text(); 
+    }catch{} 
+  } return null; 
+}
+
+versions=JSON.parse(fetchWithFallback(VERSION_FALLBACK_PATHS)).availableVersions;
+//*** END: Inserting backward compatibility versioing ***//
 
 const els = {
   menuButton: document.querySelector('#menuButton'), menuPanel: document.querySelector('#menuPanel'),
