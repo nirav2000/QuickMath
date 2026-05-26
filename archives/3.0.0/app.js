@@ -1,101 +1,60 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js';
 import { getFirestore, addDoc, collection, serverTimestamp, getDocs, query, where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js';
+import { topics, topicsById } from './topics/index.js';
+import { drawStats } from './lib/stats.js';
+import { renderTips } from './lib/tips.js';
 
-const firebaseConfig = { apiKey:'AIzaSyDeqA-ek9IULGzqWSP3lcNhRVdRprKHJYg', authDomain:'quickmaths-84461.firebaseapp.com', projectId:'quickmaths-84461', storageBucket:'quickmaths-84461.firebasestorage.app', messagingSenderId:'620869920659', appId:'1:620869920659:web:805509d873006044856a66', measurementId:'G-NN37WM99MK' };
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-const versions = [
-  { version: '3.0.0', label: '3.0.0 current', archive: 'archives/3.0.0' },
-  { version: '2.0.0', label: '2.0.0', archive: 'archives/2.0.0' },
-  { version: '1.0.0', label: '1.0.0', archive: 'archives/1.0.0' },
-  { version: '0.1.0', label: '0.1.0', archive: 'archives/0.1.0' }
-];
-
-const els = {
-  menuButton: document.querySelector('#menuButton'), menuPanel: document.querySelector('#menuPanel'),
-  pages: { practice:document.querySelector('#practicePage'), stats:document.querySelector('#statsPage'), tips:document.querySelector('#tipsPage'), history:document.querySelector('#historyPage') },
-  versionSelect: document.querySelector('#versionSelect'), historyContent: document.querySelector('#historyContent'),
-  questionText:document.querySelector('#questionText'), answerInput:document.querySelector('#answerInput'), submitButton:document.querySelector('#submitButton'), feedback:document.querySelector('#feedback'),
-  authButton:document.querySelector('#authButton'), logoutButton:document.querySelector('#logoutButton'),
-  totalQuestions:document.querySelector('#totalQuestions'), correctCount:document.querySelector('#correctCount'), wrongCount:document.querySelector('#wrongCount'), avgTime:document.querySelector('#avgTime'), accuracyRate:document.querySelector('#accuracyRate'), recentAttempts:document.querySelector('#recentAttempts'),
-  difficultyChart:document.querySelector('#difficultyChart'), trendChart:document.querySelector('#trendChart')
-};
-
-const provider = new GoogleAuthProvider();
-const attemptsKey='attempts'; const cardsKey='sr_cards';
-let userId='anonymous';
-let current=null; let start=0;
-
-function levelFromStats(){ const attempts=JSON.parse(localStorage.getItem(attemptsKey)||'[]'); const recent=attempts.slice(-25); const acc = recent.length ? recent.filter(a=>a.isCorrect).length/recent.length : 1; if(acc>0.9&&recent.length>10) return 3; if(acc>0.75) return 2; return 1; }
-function numberPool(level){ if(level===1) return [1,20]; if(level===2) return [10,60]; return [30,120]; }
-
-function getCards(){ return JSON.parse(localStorage.getItem(cardsKey)||'{}'); }
-function saveCards(cards){ localStorage.setItem(cardsKey, JSON.stringify(cards)); }
-function pickQuestion(){
-  const level=levelFromStats(); const [min,max]=numberPool(level); const cards=getCards(); const now=Date.now();
-  const due = Object.entries(cards).filter(([,v])=>v.nextReview<=now).map(([k])=>Number(k)).filter(n=>n>=min&&n<=max);
-  const root = due.length ? due[Math.floor(Math.random()*due.length)] : Math.floor(Math.random()*(max-min+1))+min;
-  return { root, value:root*root, prompt:`√${root*root}`, level };
+const firebaseConfig={apiKey:'AIzaSyDeqA-ek9IULGzqWSP3lcNhRVdRprKHJYg',authDomain:'quickmaths-84461.firebaseapp.com',projectId:'quickmaths-84461',storageBucket:'quickmaths-84461.firebasestorage.app',messagingSenderId:'620869920659',appId:'1:620869920659:web:805509d873006044856a66',measurementId:'G-NN37WM99MK'};
+const app=initializeApp(firebaseConfig),db=getFirestore(app),auth=getAuth(app),provider=new GoogleAuthProvider();
+const q=s=>document.querySelector(s);
+const els={menuButton:q('#menuButton'),menuPanel:q('#menuPanel'),pages:{practice:q('#practicePage'),stats:q('#statsPage'),tips:q('#tipsPage'),history:q('#historyPage'),settings:q('#settingsPage')},versionSelect:q('#versionSelect'),topicSelect:q('#topicSelect'),srAlgorithmSelect:q('#srAlgorithmSelect'),topicCaption:q('#topicCaption'),tipsContainer:q('#tipsContainer'),periodFilter:q('#periodFilter'),questionText:q('#questionText'),answerInput:q('#answerInput'),submitButton:q('#submitButton'),feedback:q('#feedback'),authButton:q('#authButton'),logoutButton:q('#logoutButton'),totalQuestions:q('#totalQuestions'),correctCount:q('#correctCount'),wrongCount:q('#wrongCount'),avgTime:q('#avgTime'),accuracyRate:q('#accuracyRate'),activityCalendar:q('#activityCalendar'),recentAttempts:q('#recentAttempts'),openHistoryModal:q('#openHistoryModal'),closeHistoryModal:q('#closeHistoryModal'),historyModal:q('#historyModal'),historyContent:q('#historyContent')};
+let topic='square-roots',current,userId='anonymous',start=0; const attemptsKey='attempts',cardsKey='sr_cards',srKey='sr_algorithm';
+const attempts=()=>JSON.parse(localStorage.getItem(attemptsKey)||'[]'); const cards=()=>JSON.parse(localStorage.getItem(cardsKey)||'{}'); const saveCards=v=>localStorage.setItem(cardsKey,JSON.stringify(v));
+const getAlgo=()=>localStorage.getItem(srKey)||'sm2_strict'; const setAlgo=v=>localStorage.setItem(srKey,v);
+const level=()=>{const r=attempts().slice(-30).filter(a=>a.topic===topic);const acc=r.length?r.filter(a=>a.isCorrect).length/r.length:1;return acc>0.9&&r.length>14?4:acc>0.78?3:acc>0.6?2:1};
+const filtered=()=>{const p=els.periodFilter.value,a=attempts().filter(x=>x.topic===topic);if(p==='all')return a;const cut=Date.now()-Number(p)*86400000;return a.filter(x=>new Date(x.createdAt).getTime()>=cut);};
+function draw(){ drawStats(els, filtered()); }
+function makeQ(){ return topicsById[topic].generateQuestion(level(), cards()); }
+function nextQ(){current=makeQ();els.questionText.textContent = current.prompt;els.answerInput.value='';els.feedback.textContent='';els.feedback.className='feedback';start=performance.now();els.answerInput.focus();}
+function applySM2Strict(card, grade){const q=Math.max(0,Math.min(5,grade)); if(q<3){card.repetition=0; card.interval=1;} else {card.repetition=(card.repetition||0)+1; if(card.repetition===1) card.interval=1; else if(card.repetition===2) card.interval=6; else card.interval=Math.round((card.interval||1)*(card.efactor||2.5));} card.efactor=Math.max(1.3,(card.efactor||2.5)+(0.1-(5-q)*(0.08+(5-q)*0.02))); card.nextReview=Date.now()+card.interval*86400000; card.priority=1;}
+function applySuperMemoHeuristic(card, grade){const q=Math.max(0,Math.min(5,grade)); if(q<3){card.repetition=0; card.interval=1; card.priority=(card.priority||1)*1.7;} else {card.repetition=(card.repetition||0)+1; card.interval=card.repetition===1?1:card.repetition===2?6:Math.round((card.interval||1)*(card.efactor||2.5)); card.priority=Math.max(1,(card.priority||1)*0.92);} card.efactor=Math.max(1.3,(card.efactor||2.5)+(0.1-(5-q)*(0.08+(5-q)*0.02))); card.nextReview=Date.now()+card.interval*86400000;}
+function saveLocal(r){const a=attempts();a.push(r);localStorage.setItem(attemptsKey,JSON.stringify(a));const c=cards();c[current.id]=c[current.id]||{efactor:2.5,interval:1,repetition:0,nextReview:0,priority:1,topic};const card=c[current.id];const grade=r.isCorrect?(r.timeTakenMs<1300?5:r.timeTakenMs<2200?4:3):2; (getAlgo()==='sm2_strict'?applySM2Strict:applySuperMemoHeuristic)(card,grade);card.topic=topic;saveCards(c);}
+async function saveFS(r){try{await addDoc(collection(db,'attempts'),{...r,userId,topic,createdAt:serverTimestamp()});return true;}catch{return false;}}
+async function syncFS(){try{const qr=query(collection(db,'attempts'),where('userId','==',userId),orderBy('createdAt','desc'),limit(500));const s=await getDocs(qr);const remote=[];s.forEach(d=>remote.push(d.data()));if(remote.length)localStorage.setItem(attemptsKey,JSON.stringify(remote.reverse()));draw();}catch{}}
+async function submit(){const given=Number(els.answerInput.value);if(!Number.isFinite(given))return;const rec={question:current.prompt,answerGiven:given,answerCorrect:current.answer,isCorrect:Math.abs(given-current.answer)<0.01,timeTakenMs:Math.round(performance.now()-start),level:current.level,topic,createdAt:new Date().toISOString()};saveLocal(rec);const ok=await saveFS(rec);els.feedback.textContent=rec.isCorrect?`Correct ${ok?'• local+cloud':'• local only'}`:`Incorrect. Answer: ${current.answer}`;els.feedback.className=`feedback ${rec.isCorrect?'ok':'bad'}`;els.questionText.classList.remove('ok','bad');els.questionText.classList.add(rec.isCorrect?'ok':'bad');draw();setTimeout(()=>{els.questionText.classList.remove('ok','bad');nextQ();},850);}
+function showTips(){ renderTips(els.tipsContainer, topicsById[topic], els.topicCaption); }
+async function fetchWithFallback(paths, parser='json'){ for(const p of paths){ try{ const r=await fetch(p); if(!r.ok) continue; return parser==='json'?await r.json():await r.text(); }catch{} } return null; }
+let versionMeta = null;
+let versionById = {};
+async function loadVersions(){
+  const meta=await fetchWithFallback(['../../version.json','version.json'],'json');
+  versionMeta=meta||{currentVersion:'7.3.0',availableVersions:[{version:'7.3.0',archivePath:'archives/7.3.0'}]};
+  versionById = Object.fromEntries((versionMeta.availableVersions||[]).map(v=>[v.version,v]));
+  els.versionSelect.innerHTML='';
+  versionMeta.availableVersions.forEach(v=>{
+    const o=document.createElement('option');
+    o.value=v.version;
+    o.textContent=`${v.version}${v.label?` • ${v.label}`:''}${v.version===versionMeta.currentVersion?' (current)':''}`;
+    if(v.version===versionMeta.currentVersion)o.selected=true;
+    els.versionSelect.append(o);
+  });
 }
-function nextQuestion(){ current=pickQuestion(); els.questionText.textContent=`${current.prompt} (L${current.level})`; els.answerInput.value=''; els.feedback.textContent=''; els.feedback.className='feedback'; start=performance.now(); els.answerInput.focus(); }
-
-function updateSM2(card, grade){
-  const q=Math.max(0,Math.min(5,grade));
-  if(q<3){ card.repetition=0; card.interval=1; }
-  else { card.repetition +=1; if(card.repetition===1) card.interval=1; else if(card.repetition===2) card.interval=6; else card.interval=Math.round(card.interval*card.efactor); }
-  card.efactor = Math.max(1.3, card.efactor + (0.1-(5-q)*(0.08+(5-q)*0.02)));
-  card.nextReview = Date.now()+card.interval*24*60*60*1000;
-}
-
-function saveLocal(record){ const attempts=JSON.parse(localStorage.getItem(attemptsKey)||'[]'); attempts.push(record); localStorage.setItem(attemptsKey, JSON.stringify(attempts));
-  const cards=getCards(); const r=current.root; cards[r]=cards[r]||{ efactor:2.5, interval:0, repetition:0, nextReview:0};
-  const speedGrade = record.timeTakenMs<1200?5:record.timeTakenMs<2000?4:3; const grade = record.isCorrect ? speedGrade : 2;
-  updateSM2(cards[r], grade); saveCards(cards);
-}
-
-async function saveFirestore(record){ try { await addDoc(collection(db,'attempts'),{...record,userId,topic:'square-roots',createdAt:serverTimestamp()}); return true; } catch { return false; } }
-async function syncFromFirestore(){
-  try {
-    const qy=query(collection(db,'attempts'), where('userId','==',userId), where('topic','==','square-roots'), orderBy('createdAt','desc'), limit(200));
-    const snap=await getDocs(qy); const remote=[]; snap.forEach(d=>remote.push(d.data()));
-    if(remote.length){ localStorage.setItem(attemptsKey, JSON.stringify(remote.reverse())); renderStats(); }
-    els.feedback.textContent = `Synced ${remote.length} records from Firestore`;
-  } catch {
-    els.feedback.textContent = 'Firestore sync unavailable (index/rules/network issue). Using local data.';
-  }
-}
-
-async function submit(){ const given=Number(els.answerInput.value); if(!Number.isFinite(given)) return;
-  const timeTakenMs=Math.round(performance.now()-start); const isCorrect=Math.abs(given-current.root)<0.0001;
-  const record={question:current.value,prompt:current.prompt,answerGiven:given,answerCorrect:current.root,isCorrect,timeTakenMs,level:current.level,createdAt:new Date().toISOString()};
-  saveLocal(record); const remoteOK=await saveFirestore(record);
-  els.feedback.textContent = isCorrect ? `Correct ${remoteOK?'• saved local+cloud':'• saved local only'}` : `Incorrect. Answer: ${current.root}`;
-  els.feedback.className=`feedback ${isCorrect?'ok':'bad'}`; renderStats(); setTimeout(nextQuestion,900);
-}
-
-function drawBar(canvas, data, labels, color){ const c=canvas.getContext('2d'); const w=canvas.width,h=canvas.height; c.clearRect(0,0,w,h); c.fillStyle='#111'; c.fillRect(0,0,w,h);
-  const max=Math.max(1,...data); const pad=36; const bw=(w-pad*2)/data.length*0.7; data.forEach((v,i)=>{ const x=pad+i*((w-pad*2)/data.length)+10; const bh=(h-pad*2)*(v/max); c.fillStyle=color; c.fillRect(x,h-pad-bh,bw,bh); c.fillStyle='#ddd'; c.fillText(labels[i],x,h-10); }); }
-function drawLine(canvas, points){ const c=canvas.getContext('2d'); const w=canvas.width,h=canvas.height; c.clearRect(0,0,w,h); c.fillStyle='#111'; c.fillRect(0,0,w,h);
-  const max=Math.max(1,...points.map(p=>p.v)); const min=0; const pad=28; c.strokeStyle='#6ee7ff'; c.lineWidth=2; c.beginPath(); points.forEach((p,i)=>{ const x=pad+(i*(w-2*pad)/(points.length-1||1)); const y=h-pad-((p.v-min)/(max-min||1))*(h-2*pad); if(i===0)c.moveTo(x,y); else c.lineTo(x,y); }); c.stroke(); }
-
-function renderStats(){ const attempts=JSON.parse(localStorage.getItem(attemptsKey)||'[]'); const total=attempts.length; const correct=attempts.filter(a=>a.isCorrect).length; const wrong=total-correct; const avg=total?Math.round(attempts.reduce((s,a)=>s+a.timeTakenMs,0)/total):0;
-  els.totalQuestions.textContent=String(total); els.correctCount.textContent=String(correct); els.wrongCount.textContent=String(wrong); els.avgTime.textContent=String(avg); els.accuracyRate.textContent=`${total?Math.round(correct*100/total):0}%`;
-  els.recentAttempts.innerHTML=''; attempts.slice(-12).reverse().forEach(a=>{ const li=document.createElement('li'); li.textContent=`${a.prompt} | Ans:${a.answerGiven} | ${a.isCorrect?'✓':'✗'} | ${a.timeTakenMs}ms | L${a.level||1}`; els.recentAttempts.append(li); });
-  const byLvl=[1,2,3].map(l=>attempts.filter(a=>(a.level||1)===l && !a.isCorrect).length); drawBar(els.difficultyChart, byLvl,['L1','L2','L3'],'#ff7f7f');
-  const trend=attempts.slice(-20).map((a,i)=>({x:i,v:a.isCorrect?1:0})); drawLine(els.trendChart, trend.length?trend:[{x:0,v:0}]);
-}
-
-function showPage(page){ Object.entries(els.pages).forEach(([k,v])=>v.classList.toggle('active',k===page)); if(page==='stats') renderStats(); if(page==='history') showVersionHistory(); }
-function initMenu(){ els.menuButton.addEventListener('click',()=>els.menuPanel.classList.toggle('hidden')); document.querySelectorAll('#menuPanel [data-page]').forEach(b=>b.addEventListener('click',()=>{ showPage(b.dataset.page); els.menuPanel.classList.add('hidden'); })); }
-function initVersionSwitcher(){ versions.forEach(v=>{ const o=document.createElement('option'); o.value=v.archive; o.textContent=v.label; if(v.version==='3.0.0') o.selected=true; els.versionSelect.append(o); });
-  els.versionSelect.addEventListener('change',(e)=>{ const p=e.target.value; window.open(`${p}/index.html`,'_blank','noopener'); e.target.value='archives/3.0.0'; }); }
-async function showVersionHistory(){ const t=await fetch('VERSION_HISTORY.md').then(r=>r.text()).catch(()=> 'Unable to load version history file'); els.historyContent.textContent=t; }
-
-els.submitButton.addEventListener('click',submit); els.answerInput.addEventListener('keydown',(e)=>{ if(e.key==='Enter') submit(); });
-els.authButton.addEventListener('click',()=>signInWithPopup(auth,provider)); els.logoutButton.addEventListener('click',()=>signOut(auth));
-onAuthStateChanged(auth,(u)=>{ userId=u?.uid||'anonymous'; els.authButton.textContent=u?`Logged in: ${u.displayName}`:'Login / Signup with Google'; els.logoutButton.classList.toggle('hidden',!u); if(u) syncFromFirestore(); });
-
-initMenu(); initVersionSwitcher(); showPage('practice'); renderStats(); nextQuestion();
+async function openHistory(){const t=await fetchWithFallback(['../../VERSION_HISTORY.md','VERSION_HISTORY.md'],'text'); const lines=(t||'').split('\n'); const sections=[]; let cur=null; for(const line of lines){ if(line.startsWith('## ')){ if(cur) sections.push(cur); cur={title:line.replace('## ','').trim(), items:[]}; } else if(cur && line.trim().startsWith('- ')){ cur.items.push(line.trim().slice(2)); }} if(cur) sections.push(cur); const map=Object.fromEntries(sections.map(s=>[s.title.split(' - ')[0],s])); const cards=(versionMeta?.availableVersions||[]).map(v=>{ const sec=map[v.version]; const items=sec?.items?.map(i=>`<li>${i}</li>`).join('')||'<li>No notes recorded.</li>'; return `<article class='history-card'><h4>${v.version} <small>${v.label||''}</small></h4><ul>${items}</ul></article>`;}).join(''); els.historyContent.innerHTML=cards||'Unable to load version history'; if(!els.historyModal.open)els.historyModal.showModal();}
+function showPage(p){Object.entries(els.pages).forEach(([k,v])=>v.classList.toggle('active',k===p));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===p));if(p==='stats')draw();if(p==='history')openHistory();}
+function initTopicSelect(){els.topicSelect.innerHTML='';topics.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.label;if(t.id===topic)o.selected=true;els.topicSelect.append(o);});}
+els.submitButton.addEventListener('click',submit);els.answerInput.addEventListener('keydown',e=>e.key==='Enter'&&submit());els.periodFilter.addEventListener('change',draw);els.topicSelect.addEventListener('change',e=>{topic=e.target.value;showTips();draw();nextQ();});
+els.srAlgorithmSelect.value=getAlgo();els.srAlgorithmSelect.addEventListener('change',e=>setAlgo(e.target.value));
+els.versionSelect.addEventListener('change',e=>{
+  const v=e.target.value;
+  const base=window.location.pathname.includes('/archives/') ? window.location.pathname.split('/archives/')[0] : window.location.pathname.replace(/\/[^/]*$/,'');
+  const root=`${window.location.origin}${base}`;
+  const current=versionMeta?.currentVersion||'7.3.0';
+  const target = versionById[v];
+  if(!target){ return; }
+  window.location.href = v===current ? `${root}/index.html` : `${root}/${target.archivePath}/index.html`;
+});
+els.menuButton.addEventListener('click',()=>els.menuPanel.classList.toggle('hidden'));document.querySelectorAll('#menuPanel [data-page], .bottom-tabs [data-page]').forEach(b=>b.addEventListener('click',()=>{showPage(b.dataset.page);els.menuPanel.classList.add('hidden');}));
+els.authButton.addEventListener('click',()=>signInWithPopup(auth,provider));els.logoutButton.addEventListener('click',()=>signOut(auth));onAuthStateChanged(auth,u=>{userId=u?.uid||'anonymous';els.authButton.textContent=u?`Logged in: ${u.displayName}`:'Login / Signup with Google';els.logoutButton.classList.toggle('hidden',!u);if(u)syncFS();});
+els.openHistoryModal.addEventListener('click',openHistory);els.closeHistoryModal.addEventListener('click',()=>els.historyModal.close());
+await loadVersions(); initTopicSelect(); showTips(); showPage('practice'); draw(); nextQ();
