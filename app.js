@@ -4,10 +4,14 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChang
 import { topics, topicsById } from './topics/index.js';
 import { drawStats } from './lib/stats.js';
 import { renderTips } from './lib/tips.js';
+import { loadVersions as loadVersionsMeta, openHistory as openHistoryModal, bindVersionSwitcher } from './lib/versioning.js';
 
 const firebaseConfig={apiKey:'AIzaSyDeqA-ek9IULGzqWSP3lcNhRVdRprKHJYg',authDomain:'quickmaths-84461.firebaseapp.com',projectId:'quickmaths-84461',storageBucket:'quickmaths-84461.firebasestorage.app',messagingSenderId:'620869920659',appId:'1:620869920659:web:805509d873006044856a66',measurementId:'G-NN37WM99MK'};
 const app=initializeApp(firebaseConfig),db=getFirestore(app),auth=getAuth(app),provider=new GoogleAuthProvider();
 const q=s=>document.querySelector(s);
+const VERSION_FALLBACK_PATHS = ['../../version.json','version.json'];
+const HISTORY_FALLBACK_PATHS = ['../../VERSION_HISTORY.md','VERSION_HISTORY.md'];
+
 const els={menuButton:q('#menuButton'),menuPanel:q('#menuPanel'),pages:{practice:q('#practicePage'),stats:q('#statsPage'),tips:q('#tipsPage'),history:q('#historyPage'),settings:q('#settingsPage')},versionSelect:q('#versionSelect'),topicSelect:q('#topicSelect'),srAlgorithmSelect:q('#srAlgorithmSelect'),topicCaption:q('#topicCaption'),tipsContainer:q('#tipsContainer'),periodFilter:q('#periodFilter'),questionText:q('#questionText'),answerInput:q('#answerInput'),submitButton:q('#submitButton'),feedback:q('#feedback'),authButton:q('#authButton'),logoutButton:q('#logoutButton'),totalQuestions:q('#totalQuestions'),correctCount:q('#correctCount'),wrongCount:q('#wrongCount'),avgTime:q('#avgTime'),accuracyRate:q('#accuracyRate'),activityCalendar:q('#activityCalendar'),recentAttempts:q('#recentAttempts'),openHistoryModal:q('#openHistoryModal'),closeHistoryModal:q('#closeHistoryModal'),historyModal:q('#historyModal'),historyContent:q('#historyContent')};
 let topic='square-roots',current,userId='anonymous',start=0; const attemptsKey='attempts',cardsKey='sr_cards',srKey='sr_algorithm';
 const attempts=()=>JSON.parse(localStorage.getItem(attemptsKey)||'[]'); const cards=()=>JSON.parse(localStorage.getItem(cardsKey)||'{}'); const saveCards=v=>localStorage.setItem(cardsKey,JSON.stringify(v));
@@ -27,25 +31,8 @@ function showTips(){ renderTips(els.tipsContainer, topicsById[topic], els.topicC
 async function fetchWithFallback(paths, parser='json'){ for(const p of paths){ try{ const r=await fetch(p); if(!r.ok) continue; return parser==='json'?await r.json():await r.text(); }catch{} } return null; }
 let versionMeta = null;
 let versionById = {};
-function getViewedVersion(){
-  const match = window.location.pathname.match(/\/archives\/([^/]+)\//);
-  return match ? match[1] : (versionMeta?.currentVersion || null);
-}
-
-async function loadVersions(){
-  const meta=await fetchWithFallback(['../../version.json','version.json'],'json');
-  versionMeta=meta||{currentVersion:'7.3.1',availableVersions:[{version:'7.3.1',archivePath:'archives/7.3.1'}]};
-  versionById = Object.fromEntries((versionMeta.availableVersions||[]).map(v=>[v.version,v]));
-  els.versionSelect.innerHTML='';
-  versionMeta.availableVersions.forEach(v=>{
-    const o=document.createElement('option');
-    o.value=v.version;
-    o.textContent=`${v.version}${v.label?` • ${v.label}`:''}${v.version===versionMeta.currentVersion?' (current)':''}`;
-    if(v.version===getViewedVersion()) o.selected=true;
-    els.versionSelect.append(o);
-  });
-}
-async function openHistory(){const t=await fetchWithFallback(['../../VERSION_HISTORY.md','VERSION_HISTORY.md'],'text'); const lines=(t||'').split('\n'); const sections=[]; let cur=null; for(const line of lines){ if(line.startsWith('## ')){ if(cur) sections.push(cur); cur={title:line.replace('## ','').trim(), items:[]}; } else if(cur && line.trim().startsWith('- ')){ cur.items.push(line.trim().slice(2)); }} if(cur) sections.push(cur); const map=Object.fromEntries(sections.map(s=>[s.title.split(' - ')[0],s])); const cards=(versionMeta?.availableVersions||[]).map(v=>{ const sec=map[v.version]; const items=sec?.items?.map(i=>`<li>${i}</li>`).join('')||'<li>No notes recorded.</li>'; return `<article class='history-card'><h4>${v.version} <small>${v.label||''}</small></h4><ul>${items}</ul></article>`;}).join(''); els.historyContent.innerHTML=cards||'Unable to load version history'; if(!els.historyModal.open)els.historyModal.showModal();}
+async function loadVersions(){ const out = await loadVersionsMeta({ fetchWithFallback, versionSelect: els.versionSelect }); versionMeta = out.versionMeta; versionById = out.versionById; }
+async function openHistory(){ await openHistoryModal({ fetchWithFallback, historyContent: els.historyContent, historyModal: els.historyModal, versionMeta }); }
 function showPage(p){Object.entries(els.pages).forEach(([k,v])=>v.classList.toggle('active',k===p));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===p));if(p==='stats')draw();if(p==='history')openHistory();}
 function initTopicSelect(){els.topicSelect.innerHTML='';topics.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.label;if(t.id===topic)o.selected=true;els.topicSelect.append(o);});}
 els.submitButton.addEventListener('click',submit);els.answerInput.addEventListener('keydown',e=>e.key==='Enter'&&submit());els.periodFilter.addEventListener('change',draw);els.topicSelect.addEventListener('change',e=>{topic=e.target.value;showTips();draw();nextQ();});
