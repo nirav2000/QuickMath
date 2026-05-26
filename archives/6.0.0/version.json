@@ -1,9 +1,12 @@
 {
-  "currentVersion": "7.0.0",
-  "releaseType": "major",
+  "currentVersion": "7.3.0",
+  "releaseType": "minor",
   "historyFile": "VERSION_HISTORY.md",
   "availableVersions": [
-    {"version":"7.0.0","label":"Current","archivePath":"archives/7.0.0"},
+    {"version":"7.3.0","label":"Current","archivePath":"archives/7.3.0"},
+    {"version":"7.2.0","label":"Switching+History polish","archivePath":"archives/7.2.0"},
+    {"version":"7.1.0","label":"Anchor list","archivePath":"archives/7.1.0"},
+    {"version":"7.0.0","label":"Stats+Fallback Fix","archivePath":"archives/7.0.0"},
     {"version":"6.0.0","label":"SR settings + modular topics","archivePath":"archives/6.0.0"},
     {"version":"5.0.0","label":"Topics+Versioning","archivePath":"archives/5.0.0"},
     {"version":"4.0.0","label":"Mobile+Modal","archivePath":"archives/4.0.0"},
