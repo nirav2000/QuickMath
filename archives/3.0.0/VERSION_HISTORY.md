@@ -1,5 +1,10 @@
 # Version History
 
+## 7.3.2 - 2026-05-26
+- PATCH: Fixed archived `3.0.0` build loading issue by restoring compatible app bundle files (`index.html`, `styles.css`, `app.js`, `lib/*`, `topics/*`).
+- PATCH: Ensured `archives/3.0.0` includes required module files imported by `app.js`.
+- Archived full release into `archives/7.3.2`.
+
 ## 7.3.1 - 2026-05-26
 - PATCH: Fully fixed archive-to-archive version switching by routing through `archivePath` from central metadata.
 - PATCH: Propagated cleaned switcher logic and central version/history files across archive builds to prevent nested archive URLs.
