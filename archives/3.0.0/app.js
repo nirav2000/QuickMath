@@ -23,9 +23,7 @@ async function fetchWithFallback(paths, parser='json'){
       const r=await fetch(p); 
       if(!r.ok) continue; 
       return parser==='json'?await r.json():await r.text(); 
-    }catch{} 
-  } return null; 
-}
+    }catch{} } return null; }
 
 //versions=JSON.parse(fetchWithFallback(VERSION_FALLBACK_PATHS)).availableVersions;
 //*** END: Inserting backward compatibility versioing ***//
