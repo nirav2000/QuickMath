@@ -27,16 +27,21 @@ function showTips(){ renderTips(els.tipsContainer, topicsById[topic], els.topicC
 async function fetchWithFallback(paths, parser='json'){ for(const p of paths){ try{ const r=await fetch(p); if(!r.ok) continue; return parser==='json'?await r.json():await r.text(); }catch{} } return null; }
 let versionMeta = null;
 let versionById = {};
+function getViewedVersion(){
+  const match = window.location.pathname.match(/\/archives\/([^/]+)\//);
+  return match ? match[1] : (versionMeta?.currentVersion || null);
+}
+
 async function loadVersions(){
   const meta=await fetchWithFallback(['../../version.json','version.json'],'json');
-  versionMeta=meta;//||{currentVersion:'7.3.0',availableVersions:[{version:'7.3.0',archivePath:'archives/7.3.0'}]};
+  versionMeta=meta||{currentVersion:'7.3.1',availableVersions:[{version:'7.3.1',archivePath:'archives/7.3.1'}]};
   versionById = Object.fromEntries((versionMeta.availableVersions||[]).map(v=>[v.version,v]));
   els.versionSelect.innerHTML='';
   versionMeta.availableVersions.forEach(v=>{
     const o=document.createElement('option');
     o.value=v.version;
     o.textContent=`${v.version}${v.label?` • ${v.label}`:''}${v.version===versionMeta.currentVersion?' (current)':''}`;
-    if(v.version===versionMeta.currentVersion)o.selected=true;
+    if(v.version===getViewedVersion()) o.selected=true;
     els.versionSelect.append(o);
   });
 }
@@ -49,7 +54,7 @@ els.versionSelect.addEventListener('change',e=>{
   const v=e.target.value;
   const base=window.location.pathname.includes('/archives/') ? window.location.pathname.split('/archives/')[0] : window.location.pathname.replace(/\/[^/]*$/,'');
   const root=`${window.location.origin}${base}`;
-  const current=versionMeta?.currentVersion||'3.0.0';
+  const current=versionMeta?.currentVersion||'7.3.1';
   const target = versionById[v];
   if(!target){ return; }
   window.location.href = v===current ? `${root}/index.html` : `${root}/${target.archivePath}/index.html`;
